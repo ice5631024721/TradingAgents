@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+cli/__init__.py
+cli/main.py
+cli/models.py
+cli/utils.py
+tradingagents.egg-info/PKG-INFO
+tradingagents.egg-info/SOURCES.txt
+tradingagents.egg-info/dependency_links.txt
+tradingagents.egg-info/requires.txt
+tradingagents.egg-info/top_level.txt

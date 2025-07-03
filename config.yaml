@@ -1,0 +1,33 @@
+# TradingAgents Configuration File
+# This file contains all the settings that were previously collected through command line interaction
+
+# Basic Analysis Settings
+ticker: "SPY"  # Stock ticker symbol to analyze
+analysis_date: "2026-01-27"  # Analysis date in YYYY-MM-DD format
+
+# Analyst Team Selection
+# Available options: market, social, news, fundamentals
+analysts:
+#  - "market"
+#  - "social"
+  - "news"
+#  - "fundamentals"
+
+# Research Depth Level
+# 1 = Shallow (Quick research, few debate rounds)
+# 3 = Medium (Moderate debate rounds and strategy discussion)
+# 5 = Deep (Comprehensive research, in-depth debate and strategy discussion)
+research_depth: 3
+
+# LLM Provider Configuration
+# Available providers: openai, anthropic, google, openrouter, ollama
+llm_provider: "ollama"
+backend_url: "http://127.0.0.1:11434/v1"
+
+# Thinking Agents Configuration
+# Shallow thinking agent for quick tasks
+shallow_thinker: "qwen3:14b"
+
+# Deep thinking agent for complex reasoning
+deep_thinker: "qwen3:14b"
+embedding: "quentinz/bge-large-zh-v1.5:latest"

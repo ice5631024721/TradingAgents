@@ -1,0 +1,26 @@
+# VAM策略回测系统依赖包
+# 波动率自适应动量策略所需的Python包
+
+# 数据处理
+pandas>=1.5.0
+numpy>=1.21.0
+
+# 金融数据获取
+yfinance>=0.2.0
+
+# 可视化
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# 数学计算
+scipy>=1.9.0
+
+# 日期时间处理
+python-dateutil>=2.8.0
+
+# 可选：更高级的技术分析
+# talib>=0.4.0  # 需要单独安装TA-Lib C库
+# ta>=0.10.0    # 纯Python技术分析库
+
+# 可选：性能优化
+# numba>=0.56.0  # JIT编译加速

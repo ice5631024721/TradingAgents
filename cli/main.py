@@ -392,9 +392,13 @@ def update_display(layout, spinner_text=None):
 
 
 def get_user_selections():
-    """Get all user selections before starting the analysis display."""
+    """Load all user selections from configuration file."""
+    import yaml
+    import os
+    from pathlib import Path
+    
     # Display ASCII art welcome message
-    with open("./cli/static/welcome.txt", "r") as f:
+    with open("./static/welcome.txt", "r") as f:
         welcome_ascii = f.read()
 
     # Create welcome box content
@@ -417,78 +421,64 @@ def get_user_selections():
     console.print(Align.center(welcome_box))
     console.print()  # Add a blank line after the welcome box
 
-    # Create a boxed questionnaire for each step
-    def create_question_box(title, prompt, default=None):
-        box_content = f"[bold]{title}[/bold]\n"
-        box_content += f"[dim]{prompt}[/dim]"
-        if default:
-            box_content += f"\n[dim]Default: {default}[/dim]"
-        return Panel(box_content, border_style="blue", padding=(1, 2))
 
-    # Step 1: Ticker symbol
-    console.print(
-        create_question_box(
-            "Step 1: Ticker Symbol", "Enter the ticker symbol to analyze", "SPY"
-        )
-    )
-    selected_ticker = get_ticker()
+    script_dir = Path(__file__).parent
 
-    # Step 2: Analysis date
-    default_date = datetime.datetime.now().strftime("%Y-%m-%d")
-    console.print(
-        create_question_box(
-            "Step 2: Analysis Date",
-            "Enter the analysis date (YYYY-MM-DD)",
-            default_date,
-        )
-    )
-    analysis_date = get_analysis_date()
-
-    # Step 3: Select analysts
-    console.print(
-        create_question_box(
-            "Step 3: Analysts Team", "Select your LLM analyst agents for the analysis"
-        )
-    )
-    selected_analysts = select_analysts()
-    console.print(
-        f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
-    )
-
-    # Step 4: Research depth
-    console.print(
-        create_question_box(
-            "Step 4: Research Depth", "Select your research depth level"
-        )
-    )
-    selected_research_depth = select_research_depth()
-
-    # Step 5: OpenAI backend
-    console.print(
-        create_question_box(
-            "Step 5: OpenAI backend", "Select which service to talk to"
-        )
-    )
-    selected_llm_provider, backend_url = select_llm_provider()
+    # Load configuration from file
+    config_file = script_dir / "../config.yaml"
+    if not os.path.exists(config_file):
+        console.print(f"[red]Error: Configuration file '{config_file}' not found![/red]")
+        console.print("[yellow]Please create a config.yaml file with your settings.[/yellow]")
+        exit(1)
     
-    # Step 6: Thinking agents
-    console.print(
-        create_question_box(
-            "Step 6: Thinking Agents", "Select your thinking agents for analysis"
-        )
-    )
-    selected_shallow_thinker = select_shallow_thinking_agent(selected_llm_provider)
-    selected_deep_thinker = select_deep_thinking_agent(selected_llm_provider)
+    try:
+        with open(config_file, 'r') as f:
+            config = yaml.safe_load(f)
+    except Exception as e:
+        console.print(f"[red]Error loading configuration file: {e}[/red]")
+        exit(1)
+    
+    # Validate and convert analyst strings to AnalystType enums
+    analyst_mapping = {
+        "market": AnalystType.MARKET,
+        "social": AnalystType.SOCIAL,
+        "news": AnalystType.NEWS,
+        "fundamentals": AnalystType.FUNDAMENTALS,
+    }
+    
+    selected_analysts = []
+    for analyst_str in config.get("analysts", []):
+        if analyst_str in analyst_mapping:
+            selected_analysts.append(analyst_mapping[analyst_str])
+        else:
+            console.print(f"[yellow]Warning: Unknown analyst type '{analyst_str}' ignored[/yellow]")
+    
+    if not selected_analysts:
+        console.print("[red]Error: No valid analysts specified in configuration[/red]")
+        exit(1)
+    
+    # Display loaded configuration
+    console.print("[bold blue]Configuration loaded from config.yaml:[/bold blue]")
+    console.print(f"[green]Ticker:[/green] {config.get('ticker', 'SPY')}")
+    console.print(f"[green]Analysis Date:[/green] {config.get('analysis_date', datetime.datetime.now().strftime('%Y-%m-%d'))}")
+    console.print(f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}")
+    console.print(f"[green]Research Depth:[/green] {config.get('research_depth', 3)}")
+    console.print(f"[green]LLM Provider:[/green] {config.get('llm_provider', 'openai')}")
+    console.print(f"[green]Shallow Thinker:[/green] {config.get('shallow_thinker', 'gpt-4o-mini')}")
+    console.print(f"[green]Deep Thinker:[/green] {config.get('deep_thinker', 'o4-mini')}")
+    console.print()
 
+    # 这么写属于硬编码
     return {
-        "ticker": selected_ticker,
-        "analysis_date": analysis_date,
+        "ticker": config.get("ticker", "SPY"),
+        "analysis_date": config.get("analysis_date", datetime.datetime.now().strftime("%Y-%m-%d")),
         "analysts": selected_analysts,
-        "research_depth": selected_research_depth,
-        "llm_provider": selected_llm_provider.lower(),
-        "backend_url": backend_url,
-        "shallow_thinker": selected_shallow_thinker,
-        "deep_thinker": selected_deep_thinker,
+        "research_depth": config.get("research_depth", 3),
+        "llm_provider": config.get("llm_provider", "openai").lower(),
+        "backend_url": config.get("backend_url", "https://api.openai.com/v1"),
+        "shallow_thinker": config.get("shallow_thinker", "gpt-4o-mini"),
+        "deep_thinker": config.get("deep_thinker", "o4-mini"),
+        "embedding":"quentinz/bge-large-zh-v1.5:latest"
     }
 
 
@@ -743,6 +733,7 @@ def run_analysis():
     config["deep_think_llm"] = selections["deep_thinker"]
     config["backend_url"] = selections["backend_url"]
     config["llm_provider"] = selections["llm_provider"].lower()
+    config["embedding"] = selections["embedding"]
 
     # Initialize the graph
     graph = TradingAgentsGraph(
@@ -1095,7 +1086,7 @@ def run_analysis():
 
         update_display(layout)
 
-
+# 如果只有一个命令的话，运行的时候就不需要指定对应的命令，当该文件运行的时候就会直接进入该方法
 @app.command()
 def analyze():
     run_analysis()
