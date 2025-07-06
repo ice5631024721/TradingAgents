@@ -57,12 +57,13 @@ class FinalEventDrivenLSTMStrategy:
         self.scaler = None
         self.trades = []
         
-    def get_market_data(self, symbol='SPY'):
+    def get_market_data(self, symbol='PDD'):
         """
         获取市场数据
         """
         try:
             print(f"正在获取 {symbol} 的数据...")
+            yf.set_config("http://127.0.0.1:1087")
             ticker = yf.Ticker(symbol)
             
             end_date = datetime.now()
