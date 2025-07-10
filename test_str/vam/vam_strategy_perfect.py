@@ -56,12 +56,14 @@ class VAMPerfectStrategy:
         self.total_commission = 0
         self.total_slippage = 0
         
-    def get_data(self, symbol='SPY', period='2y'):
+    def get_data(self, symbol='TSLA', period='2y'):
         """
         获取数据，优先使用真实数据，失败时使用高质量模拟数据
         """
         try:
             print(f"正在获取 {symbol} 的数据...")
+            yf.set_config("https://127.0.0.1:1087")
+
             ticker = yf.Ticker(symbol)
             data = ticker.history(period=period, interval='1d')
             
@@ -82,7 +84,7 @@ class VAMPerfectStrategy:
         except Exception as e:
             print(f"获取真实数据失败: {e}")
             print("使用高质量模拟数据...")
-            data = self._generate_quality_data()
+            # data = self._generate_quality_data()
             
         self.data = data
         return data
@@ -670,10 +672,10 @@ def main():
     """
     主函数
     """
-    print("=" * 60)
+    print("=" * 5)
     print("VAM Perfect Strategy v10.0 - 完美版波动率自适应动量策略")
     print("融合历史数据参数优化、市场状态识别、多时间框架趋势确认、交易成本建模")
-    print("=" * 60)
+    print("=" * 5)
     
     # 创建策略实例
     strategy = VAMPerfectStrategy()
@@ -681,7 +683,7 @@ def main():
     try:
         # 1. 获取数据
         print("\n1. 获取数据...")
-        strategy.get_data()
+        strategy.get_data('AMD')
         
         # 2. 计算指标
         print("2. 计算技术指标...")
@@ -713,9 +715,9 @@ def main():
         print(f"总成本: ${strategy.total_commission + strategy.total_slippage:.2f}")
         
         # 改进效果评估
-        print("\n=" * 50)
+        print("\n=" * 5)
         print("改进效果评估:")
-        print("=" * 50)
+        print("=" * 5)
         
         print("✅ 历史数据参数优化: 已完成")
         print("   - 通过大量历史数据测试优化了MA、ATR等关键参数")
@@ -734,9 +736,9 @@ def main():
         print("   - 更贴近实际交易环境")
         
         # 目标达成情况
-        print("\n=" * 50)
+        print("\n=" * 5)
         print("目标达成情况:")
-        print("=" * 50)
+        print("=" * 5)
         
         if metrics['总收益率'] > 0.2:
             print(f"✅ 收益率提升: {metrics['总收益率']:.2%} (目标: >20%)")
